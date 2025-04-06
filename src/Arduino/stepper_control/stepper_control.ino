@@ -5,7 +5,7 @@
 
 // --- Motor Configuration ---
 #define MOTOR_STEP_PIN 2  // Define your step pin
-#define MOTOR_DIR_PIN 3   // Define your direction pin
+#define MOTOR_DIR_PIN 0   // Define your direction pin
 #define MOTOR_ENABLE_PIN 4 // Define your enable pin (optional)
 
 #define STEPS_PER_REVOLUTION 200.0
@@ -27,14 +27,45 @@ void setup() {
   }
   Serial.println("Stepper Control Sketch Started");
 
-  // Motor setup
-  stepper_z.setMaxSpeed(1000.0); // Set max speed in steps/second - adjust as needed
-  stepper_z.setAcceleration(100.0); // Set acceleration in steps/second/second - adjust as needed
-  if (MOTOR_ENABLE_PIN != -1) { // Enable pin is optional, set to -1 if not used
-    pinMode(MOTOR_ENABLE_PIN, OUTPUT);
-    digitalWrite(MOTOR_ENABLE_PIN, LOW); // Enable motor driver (adjust polarity if needed)
+    // --- TMC2209 Setup ---
+    // 1. Include TMC2209Stepper library (Ensure library is installed via Library Manager: Sketch -> Include Library -> Manage Libraries...)
+    //    You can search for "TMC2209Stepper by Teemu Mäntynen" in the Library Manager
+    //#include <TMCStepper.h>
+  
+    // 2. Define TMC2209 pins - Software Serial Example (adjust pins and Serial port as needed for your wiring)
+    //#define TMC_SERIAL_RX_PIN 5  // Arduino RX pin connected to TMC2209 TX pin
+    //#define TMC_SERIAL_TX_PIN 17  // Arduino TX pin connected to TMC2209 RX pin
+    //#define SERIAL_PORT Serial1 // Choose your Serial port: Serial1, Serial2 or Serial3 for HardwareSerial, or Serial for SoftwareSerial
+  
+    //    For SoftwareSerial, uncomment and adjust pins:
+    // #include <SoftwareSerial.h>
+    // SoftwareSerial tmcSerial(TMC_SERIAL_RX_PIN, TMC_SERIAL_TX_PIN);
+  
+    // 3. Create TMC2209Stepper instance using either SoftwareSerial or HardwareSerial
+    //    Ensure R_SENSE is correctly defined for your sense resistors
+    //TMCStepper driver(&SERIAL_PORT, 0.11f); // Hardware Serial - R_SENSE is the sense resistor value (e.g., 0.11 Ohm)
+    // TMC2209Stepper driver(&tmcSerial, R_SENSE);   // Software Serial - R_SENSE is the sense resistor value (e.g., 0.11f for 0.11 Ohm)
+  
+    // IMPORTANT: R_SENSE value depends on your hardware. It's the resistance of the sense resistor connected to the TMC2209.
+    // Common values are 0.11f for 0.11 Ohm resistors or 0.33f for 0.33 Ohm resistors.
+    // Incorrect R_SENSE value can lead to incorrect current readings and driver malfunction.
+    // #define R_SENSE 0.11f // Example for 0.11 Ohm sense resistor -  verify your board's resistor value!
+  
+    // 4. Initialize serial communication for TMC2209
+    //SERIAL_PORT.begin(115200); // Match baud rate in your TMC2209 datasheet and configuration (usually 115200)
+    //driver.begin();         // Initialize driver communication and verify connection
+    //driver.setMicrosteps(MICROSTEPPING);
+    //driver.setCurrent(0.2f); // Set current to 0.2 amps
+    // driver.setPowerDownMode(TMC2209_POWERDOWN_MODE_0); // Optional: Set power down mode if needed (TMC2209_POWERDOWN_MODE_0 is default)
+  
+    // --- Motor setup (AccelStepper) ---
+    stepper_z.setMaxSpeed(100.0); // Set max speed in steps/second - adjust as needed
+    stepper_z.setAcceleration(10.0); // Set acceleration in steps/second/second - adjust as needed
+    if (MOTOR_ENABLE_PIN != -1) { // Enable pin is optional, set to -1 if not used
+      pinMode(MOTOR_ENABLE_PIN, OUTPUT);
+      digitalWrite(MOTOR_ENABLE_PIN, LOW); // Enable motor driver (adjust polarity if needed)
+    }
   }
-}
 
 void loop() {
   if (Serial.available() > 0) {

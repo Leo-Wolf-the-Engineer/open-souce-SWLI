@@ -19,12 +19,13 @@
 *   Position conversion: mm to steps.
 *   Velocity conversion: mm/s to steps/second.
 
-**3. Stepper Motor Control (TMC2209) and Library:**
-*   Library: AccelStepper (recommended for flexibility and future expansion).
+**3. Stepper Motor Control (TMC2209) with UART and AccelStepper Library:**
+*   Libraries: AccelStepper for motor control and TMC2209Stepper for driver interface.
 *   Motor Constants (to be defined in code):
     *   `STEPS_PER_REVOLUTION = 200;` (1.8-degree motor)
     *   `SCREW_PITCH_MM = 0.5;` (0.5mm pitch screw)
-    *   `MICROSTEPPING = 16;` (16x microstepping - adjustable in TMC2209 config)
+    *   `MICROSTEPPING = 256;` (256x microstepping - set in code for TMC2209 UART)
+    *   `CURRENT_AMPS = 0.2;` (Motor current set to 0.2 Amps in code)
 *   Steps per mm calculation in code:
     *   `STEPS_PER_MM = (STEPS_PER_REVOLUTION * MICROSTEPPING) / SCREW_PITCH_MM;` (Calculates to 6400 steps/mm)
 *   Velocity conversion in code:
