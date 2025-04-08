@@ -10,7 +10,8 @@
 
 #define STEPS_PER_REVOLUTION 200.0
 #define SCREW_PITCH_MM 0.5
-#define MICROSTEPPING 16.0
+#define CURRENT 150
+#define MICROSTEPPING 64
 #define STEPS_PER_MM (STEPS_PER_REVOLUTION * MICROSTEPPING) / SCREW_PITCH_MM
 
 // --- Motor Instance ---
@@ -20,52 +21,42 @@ AccelStepper stepper_z(AccelStepper::DRIVER, MOTOR_STEP_PIN, MOTOR_DIR_PIN);
 float targetPositionMM_Z = 0.0;
 float velocityMM_per_sec_Z = 0.0;
 
+// --- TMC2209 Setup ---
+// Include TMC2209Stepper library
+#include <TMCStepper.h>
+  
+// Define TMC2209 pins - Software Serial Example
+#define SERIAL_PORT Serial2 // Choose your Serial port: Serial1, Serial2 or Serial3
+  
+// Create TMC2209Stepper instance using either SoftwareSerial or HardwareSerial
+#define R_SENSE 0.11f // Sense resistor value on your TMC2209 module (check the markings)
+#define DRIVER_ADDRESS 0b00 // Default UART address if MS1 and MS2 are low
+
+// Create a TMC2209Stepper object for UART communication
+TMC2209Stepper driver(&SERIAL_PORT, R_SENSE, DRIVER_ADDRESS);
+
 void setup() {
   Serial.begin(115200);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB
-  }
-  Serial.println("Stepper Control Sketch Started");
+  while (!Serial);
+  Serial.println("Initializing TMC2209 via UART...");
+  driver.begin();
+  driver.microsteps(MICROSTEPPING);
+  Serial.print("Microsteps set to: ");
+  Serial.println(driver.microsteps());
+  driver.rms_current(CURRENT);
+  Serial.print("Run current set to: ");
+  Serial.println(driver.rms_current());
+  Serial.println("TMC2209 configuration complete.");
+  stepper_z.setMaxSpeed(51200.0); // Set max speed in steps/second (raw microsteps)
+  stepper_z.setAcceleration(1000.0); // Set acceleration in steps/second/second (raw microst
+  Serial.print("Steps per MM (effective): ");
+  Serial.println(STEPS_PER_MM);
 
-    // --- TMC2209 Setup ---
-    // 1. Include TMC2209Stepper library (Ensure library is installed via Library Manager: Sketch -> Include Library -> Manage Libraries...)
-    //    You can search for "TMC2209Stepper by Teemu Mäntynen" in the Library Manager
-    //#include <TMCStepper.h>
-  
-    // 2. Define TMC2209 pins - Software Serial Example (adjust pins and Serial port as needed for your wiring)
-    //#define TMC_SERIAL_RX_PIN 5  // Arduino RX pin connected to TMC2209 TX pin
-    //#define TMC_SERIAL_TX_PIN 17  // Arduino TX pin connected to TMC2209 RX pin
-    //#define SERIAL_PORT Serial1 // Choose your Serial port: Serial1, Serial2 or Serial3 for HardwareSerial, or Serial for SoftwareSerial
-  
-    //    For SoftwareSerial, uncomment and adjust pins:
-    // #include <SoftwareSerial.h>
-    // SoftwareSerial tmcSerial(TMC_SERIAL_RX_PIN, TMC_SERIAL_TX_PIN);
-  
-    // 3. Create TMC2209Stepper instance using either SoftwareSerial or HardwareSerial
-    //    Ensure R_SENSE is correctly defined for your sense resistors
-    //TMCStepper driver(&SERIAL_PORT, 0.11f); // Hardware Serial - R_SENSE is the sense resistor value (e.g., 0.11 Ohm)
-    // TMC2209Stepper driver(&tmcSerial, R_SENSE);   // Software Serial - R_SENSE is the sense resistor value (e.g., 0.11f for 0.11 Ohm)
-  
-    // IMPORTANT: R_SENSE value depends on your hardware. It's the resistance of the sense resistor connected to the TMC2209.
-    // Common values are 0.11f for 0.11 Ohm resistors or 0.33f for 0.33 Ohm resistors.
-    // Incorrect R_SENSE value can lead to incorrect current readings and driver malfunction.
-    // #define R_SENSE 0.11f // Example for 0.11 Ohm sense resistor -  verify your board's resistor value!
-  
-    // 4. Initialize serial communication for TMC2209
-    //SERIAL_PORT.begin(115200); // Match baud rate in your TMC2209 datasheet and configuration (usually 115200)
-    //driver.begin();         // Initialize driver communication and verify connection
-    //driver.setMicrosteps(MICROSTEPPING);
-    //driver.setCurrent(0.2f); // Set current to 0.2 amps
-    // driver.setPowerDownMode(TMC2209_POWERDOWN_MODE_0); // Optional: Set power down mode if needed (TMC2209_POWERDOWN_MODE_0 is default)
-  
-    // --- Motor setup (AccelStepper) ---
-    stepper_z.setMaxSpeed(100.0); // Set max speed in steps/second - adjust as needed
-    stepper_z.setAcceleration(10.0); // Set acceleration in steps/second/second - adjust as needed
-    if (MOTOR_ENABLE_PIN != -1) { // Enable pin is optional, set to -1 if not used
-      pinMode(MOTOR_ENABLE_PIN, OUTPUT);
-      digitalWrite(MOTOR_ENABLE_PIN, LOW); // Enable motor driver (adjust polarity if needed)
-    }
+  if (MOTOR_ENABLE_PIN != -1) {
+    pinMode(MOTOR_ENABLE_PIN, OUTPUT);
+    digitalWrite(MOTOR_ENABLE_PIN, LOW);
   }
+}
 
 void loop() {
   if (Serial.available() > 0) {
