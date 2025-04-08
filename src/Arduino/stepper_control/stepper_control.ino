@@ -21,34 +21,10 @@ AccelStepper stepper_z(AccelStepper::DRIVER, MOTOR_STEP_PIN, MOTOR_DIR_PIN);
 float targetPositionMM_Z = 0.0;
 float velocityMM_per_sec_Z = 0.0;
 
-// --- TMC2209 Setup ---
-// Include TMC2209Stepper library
-#include <TMCStepper.h>
-  
-// Define TMC2209 pins - Software Serial Example
-#define SERIAL_PORT Serial2 // Choose your Serial port: Serial1, Serial2 or Serial3
-  
-// Create TMC2209Stepper instance using either SoftwareSerial or HardwareSerial
-#define R_SENSE 0.11f // Sense resistor value on your TMC2209 module (check the markings)
-#define DRIVER_ADDRESS 0b00 // Default UART address if MS1 and MS2 are low
-
-// Create a TMC2209Stepper object for UART communication
-TMC2209Stepper driver(&SERIAL_PORT, R_SENSE, DRIVER_ADDRESS);
-
 void setup() {
   Serial.begin(115200);
-  while (!Serial);
-  Serial.println("Initializing TMC2209 via UART...");
-  driver.begin();
-  driver.microsteps(MICROSTEPPING);
-  Serial.print("Microsteps set to: ");
-  Serial.println(driver.microsteps());
-  driver.rms_current(CURRENT);
-  Serial.print("Run current set to: ");
-  Serial.println(driver.rms_current());
-  Serial.println("TMC2209 configuration complete.");
-  stepper_z.setMaxSpeed(51200.0); // Set max speed in steps/second (raw microsteps)
-  stepper_z.setAcceleration(1000.0); // Set acceleration in steps/second/second (raw microst
+  stepper_z.setMaxSpeed(204800.0); // Set max speed in steps/second (raw microsteps)
+  stepper_z.setAcceleration(204800.0); // Set acceleration in steps/second/second (raw microst
   Serial.print("Steps per MM (effective): ");
   Serial.println(STEPS_PER_MM);
 
