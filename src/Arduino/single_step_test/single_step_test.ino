@@ -4,7 +4,7 @@
 
 // Define measurement parameters
 #define NUM_STEPS 10 // Number of measurement points in each direction
-#define STEP_DELAY_MS 300 // Delay at each measurement point
+#define STEP_DELAY_MS 250 // Delay at each measurement point
 
 void setup() {
   Serial.begin(115200);
@@ -30,7 +30,7 @@ void loop() {
     delay(STEP_DELAY_MS);
   }
   
-  Serial.println("Program done");
+  Serial.println("Programm done");
 
   // Stop after one cycle
   while (true) {
