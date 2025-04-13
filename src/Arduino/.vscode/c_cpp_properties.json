@@ -5,6 +5,7 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "C:\\Users\\Leo\\Documents\\Arduino\\libraries\\**",
+                "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\cores\\arduino"
             ],
             "defines": [
                 "_DEBUG",
