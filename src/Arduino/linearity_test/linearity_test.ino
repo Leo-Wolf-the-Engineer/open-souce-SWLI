@@ -5,11 +5,11 @@
 
 // Define measurement parameters
 #define RANGE_MM 0.45
-#define NUM_STEPS 10 // Number of measurement points in each direction
+#define NUM_STEPS 40 // Number of measurement points in each direction
 #define STEPS_PER_MM 25600
 #define NUM_STEPS_PER_MEASUREMENT (0.45 * STEPS_PER_MM / NUM_STEPS) // Steps to move for each measurement
 //2*2*2*2*2*2*2*2*3*3*5
-#define STEP_DELAY_MS 500 // Delay at each measurement point
+#define STEP_DELAY_MS 300 // Delay at each measurement point
 
 void setup() {
   Serial.begin(115200);
@@ -18,13 +18,12 @@ void setup() {
   pinMode(DIR_PIN, OUTPUT);
   pinMode(EN_PIN, OUTPUT);
   digitalWrite(EN_PIN, LOW); // Turn on TMC
-  digitalWrite(DIR_PIN, HIGH); // Set initial direction (negative)
 }
 
 void loop() {
   delay(500);
   // Move in negative direction and measure
-  digitalWrite(DIR_PIN, HIGH); // Negative direction
+  digitalWrite(DIR_PIN, LOW); // Negative direction
   for (int i = 0; i < NUM_STEPS; i++) {
     for(int j = 0; j < NUM_STEPS_PER_MEASUREMENT; j++){
       stepOnce();
@@ -33,7 +32,7 @@ void loop() {
   }
 
   // Move back to 0 and measure
-  digitalWrite(DIR_PIN, LOW); // Positive direction (back to 0)
+  digitalWrite(DIR_PIN, HIGH); // Positive direction (back to 0)
   for (int i = 0; i < NUM_STEPS; i++) {
     for(int j = 0; j < NUM_STEPS_PER_MEASUREMENT; j++){
       stepOnce();
