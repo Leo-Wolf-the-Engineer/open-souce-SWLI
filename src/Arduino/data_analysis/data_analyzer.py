@@ -4,10 +4,9 @@ import time
 import os
 import argparse
 
-def analyze_measurement_data(csv_file, std_dev_threshold, window_size_ms, wait_time_ms, averaging_duration_ms):
-    df = pd.read_csv(csv_file)
-    df['time_ms'] = pd.to_numeric(df['time_ms'], errors='coerce')
-    df['measurement'] = pd.to_numeric(df['measurement'], errors='coerce')
+def analyze_measurement_data(df, std_dev_threshold, window_size_ms, wait_time_ms, averaging_duration_ms):
+    #generate time_ms column
+    df['time_ms'] = pd.Series(range(len(df))) / 520.83333333*1000 # Assuming 520.83333333 samples per second
     df = df.dropna()
 
     stagnant_windows = []
