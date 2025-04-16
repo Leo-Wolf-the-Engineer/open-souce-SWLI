@@ -22,7 +22,7 @@ def extract_distance_data():
     # Read existing data.csv, if available
     if os.path.exists("data.csv"):
         try:
-            result_df = pd.read_csv("data.csv", sep=',', decimal='.')
+            result_df = pd.read_csv("data.csv", sep=',', decimal='.', encoding="windows-1252")
             print(f"Existing data.csv loaded with {len(result_df.columns)} columns.")
         except Exception as e:
             print(f"Error loading existing data.csv: {e}")
@@ -33,18 +33,17 @@ def extract_distance_data():
         try:
             print(f"Processing {file}...")
             # Read file
-            df = pd.read_csv(file, sep=',', decimal='.')
+            df = pd.read_csv(file, sep=',', decimal='.', encoding="windows-1252")
 
             # Check if the target column exists
-            if "  Distance1 (µm)" in df.columns:
-                # If the filename already exists as a column, overwrite it
-                if file in result_df.columns:
-                    print(f"  Column {file} is being updated.")
-                    result_df = result_df.drop(columns=[file])
-
-                # Add column to the result with filename as header
-                result_df[file] = df["  Distance1 (µm)"].reset_index(drop=True)
-                print(f"  Successfully extracted {len(df)} values.")
+            if " Distance1 (µm)" in df.columns:
+                # If the filename already exists as a column, skip it
+                if file not in result_df.columns:
+                    # Add column to the result with filename as header
+                    result_df[file] = df[" Distance1 (µm)"].reset_index(drop=True)
+                    print(f"  Successfully extracted {len(df)} values.")
+                else:
+                    print(f"  Column '{file}' already exists in data.csv. Skipping.")
             else:
                 print(f"  Column '  Distance1 (µm)' not found in {file}.")
         except Exception as e:
