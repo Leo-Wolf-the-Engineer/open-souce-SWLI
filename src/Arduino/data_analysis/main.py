@@ -3,7 +3,7 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from extraction import extract_and_plot_window_averages
-from linearity import plot_linearity_comparison
+from linearity import plot_linearity_comparison, plot_step_size_deviation
 
 def plot_selected_windows(df, column_name, t_offset, t_window_size, t_movement, n_movements, sampling_rate=520.8333333):
     """
@@ -150,11 +150,8 @@ def main():
     # Convert distance to steps
     distance_steps = int(distance * steps_per_um)*1000
 
-    sampling_rate = 520.8333333
-
-
-    t_offsets = [2.12, 2.53, 0.92, 0.08, 1.94, 0.78]
-    t_window_sizes = [0.45, 0.2475, 0.239, 0.24, 0.1775, 0.2185]
+    t_offsets = [2.12, 2.53, 0.92, 0.08, 1.94, 0.79]
+    t_window_sizes = [0.45, 0.2475, 0.239, 0.24, 0.1775, 0.218]
     t_movement = [0.285, 0.111, 0.09, 0.065, 0.123, 0.082]
     n_movements = [11, 41, 55, 60, 40, 40]
     n_steps = [distance_steps/10, -distance_steps/40, -distance_steps/80, -distance_steps/480, -1, 3]
@@ -174,5 +171,8 @@ def main():
     # Plot each measurement with linearity line
     linearity_figures = plot_linearity_comparison(window_averages, nm_per_movement, columns)
 
+    # Plot deviation from expected step size
+    deviation_fig = plot_step_size_deviation(window_averages, nm_per_movement, columns)
+    deviation_fig.show()
 if __name__ == "__main__":
     main()

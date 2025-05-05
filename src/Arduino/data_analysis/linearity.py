@@ -19,7 +19,7 @@ def plot_linearity_comparison(results, nm_per_movement_list, columns):
     n_rows = (len(columns) + n_cols - 1) // n_cols
 
     # Create subplot titles - use shortened column names
-    subplot_titles = [col.split('_')[0] + '...' for col in columns if col in results]
+    subplot_titles = [col.split('.csv')[0] for col in columns if col in results]
 
     # Create figure with subplots
     fig = make_subplots(
@@ -52,7 +52,7 @@ def plot_linearity_comparison(results, nm_per_movement_list, columns):
                 x=x_values,
                 y=averages,
                 mode='markers',
-                name=f'{column} (Data)',
+                name=f'{column}',
                 marker=dict(size=6),
                 showlegend=True
             ),
@@ -105,4 +105,75 @@ def plot_linearity_comparison(results, nm_per_movement_list, columns):
      #   i['text'] = '<b>' + i['text'] + '</b>'  # Make titles bold
 
     fig.show()
+    return fig
+
+def plot_step_size_deviation(window_averages, expected_step_sizes, column_names, relative=False):
+    """
+    Plots the deviation of actual step sizes from expected step sizes over travel distance.
+
+    Args:
+        window_averages: Dictionary with column names as keys and window data as values
+        expected_step_sizes: List of expected step sizes in nm for each column
+        column_names: List of column names to process
+        relative: If True, show relative deviation (percentage)
+
+    Returns:
+        fig: Plotly figure object
+    """
+    print("Plotting step size deviation...")
+    fig = go.Figure()
+
+    # Setze Standard-Titel für y-Achse
+    if relative:
+        y_axis_title = "Relative Deviation (%)"
+    else:
+        y_axis_title = "Deviation from ideal step size (nm)"
+
+    print(f"iterating over columns '{column_names}'")
+
+    for idx, column in enumerate(column_names):
+        if column not in window_averages or idx >= len(expected_step_sizes):
+            print(f"Column '{column}' not found in window_averages or index out of range.")
+            continue
+
+        # Get position data for each window
+        positions = window_averages[column]
+
+        # Calculate actual step sizes between consecutive windows
+        actual_steps = np.diff(positions)
+        print(f"Column: {column}, Actual Steps: {actual_steps}")
+
+        # Expected step size for this column
+        expected_step = expected_step_sizes[idx]
+
+        # Calculate deviations
+        if relative:
+            # Relative deviation (percentage)
+            deviations = 100 * (actual_steps - expected_step) / expected_step
+        else:
+            # Absolute deviation (nm)
+            deviations = actual_steps*1000 - expected_step  # Convert to nm
+            print (f"Column: {column}, Expected Step Size: {expected_step} nm")
+
+        # Add trace for deviation vs. travel
+        fig.add_trace(
+            go.Scatter(
+                x=positions,
+                y=deviations,
+                mode='lines+markers',
+                name=column
+            )
+        )
+
+    # Update layout
+    fig.update_layout(
+        title="Step error over travel",
+        xaxis_title="travel (µm)",
+        yaxis_title=y_axis_title,
+        legend_title="Step error over travel",
+        height=600,
+        width=1000,
+        template="plotly_white"
+    )
+
     return fig
